@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+:root {
+  --color-ink: #17202b;
+  --color-accent: #2563eb;
+  --color-accent-soft: #60a5fa;
+  --color-teal: #2dd4bf;
+  --color-surface: #f6f8fb;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Etiqueta de estado (badge) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+.badge-green {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.badge-amber {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.badge-coral {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.badge-slate {
+  background-color: #e2e8f0;
+  color: #475569;
+}
+
+/* Tablas de datos */
+.table-datos {
+  width: 100%;
+  font-size: 0.8125rem;
+}
+
+.table-datos th {
+  text-align: left;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.table-datos td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.table-datos tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+/* Inputs */
+.input-base {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #17202b;
+}
+
+.input-base:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgb(37 99 235 / 25%);
+}
+
+.form-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.25rem;
+}
