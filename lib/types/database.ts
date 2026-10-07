@@ -5,6 +5,8 @@
  */
 
 export type EstadoVehiculo = "disponible" | "reservado" | "vendido";
+export type Combustible = "nafta" | "diesel" | "gnc" | "electrico" | "hibrido";
+export type Transmision = "manual" | "automatica";
 export type FormaPago = "contado" | "financiado";
 export type EstadoOperacion = "pendiente" | "confirmada" | "entregada";
 export type TipoMovimiento = "ingreso" | "egreso";
@@ -21,6 +23,9 @@ export interface Vehiculo {
   anio: number | null;
   patente: string | null;
   km: number | null;
+  color: string | null;
+  combustible: Combustible | null;
+  transmision: Transmision | null;
   estado: EstadoVehiculo;
   precio: number | null;
   created_at: string;
@@ -29,8 +34,10 @@ export interface Vehiculo {
 export interface Cliente {
   id: number;
   name: string;
+  dni: string | null;
   email: string | null;
   phone: string | null;
+  address: string | null;
   created_at: string;
 }
 

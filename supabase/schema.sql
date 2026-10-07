@@ -23,6 +23,9 @@ create table if not exists vehiculos (
   anio int,
   patente text,
   km int,
+  color text,
+  combustible text check (combustible in ('nafta','diesel','gnc','electrico','hibrido')),
+  transmision text check (transmision in ('manual','automatica')),
   estado text check (estado in ('disponible','reservado','vendido')) default 'disponible',
   precio numeric(12,2),
   created_at timestamp with time zone default now()
@@ -32,8 +35,10 @@ create table if not exists vehiculos (
 create table if not exists clientes (
   id serial primary key,
   name text not null,
+  dni text,
   email text,
   phone text,
+  address text,
   created_at timestamp with time zone default now()
 );
 

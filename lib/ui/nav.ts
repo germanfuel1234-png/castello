@@ -18,7 +18,9 @@ export const SIDEBAR_LINKS: NavGroup[] = [
     titulo: "Gestión",
     links: [
       { label: "Vehículos", href: "/vehiculos", icono: "🚗" },
+      { label: "Cargar vehículo", href: "/vehiculos/nuevo", icono: "➕" },
       { label: "Clientes", href: "/clientes", icono: "👤" },
+      { label: "Cargar cliente", href: "/clientes/nuevo", icono: "➕" },
       { label: "Operaciones", href: "/operaciones", icono: "🧾" },
       { label: "Cargar operación", href: "/operaciones/nueva", icono: "➕" },
       { label: "Movimientos", href: "/movimientos", icono: "💸" },

@@ -9,14 +9,14 @@ import type { Categoria, Cliente, Cuenta, Movimiento, Operacion, Vehiculo } from
  */
 
 export const DEMO_VEHICULOS: Vehiculo[] = [
-  { id: 1, marca: "Demo — Chevrolet", modelo: "Onix", anio: 2021, patente: "AA000AA", km: 42000, estado: "disponible", precio: 12000000, created_at: "2026-08-01T00:00:00Z" },
-  { id: 2, marca: "Demo — Volkswagen", modelo: "Gol Trend", anio: 2019, patente: "AB111BB", km: 68000, estado: "reservado", precio: 9500000, created_at: "2026-08-10T00:00:00Z" },
-  { id: 3, marca: "Demo — Toyota", modelo: "Corolla", anio: 2022, patente: "AC222CC", km: 21000, estado: "vendido", precio: 21000000, created_at: "2026-07-20T00:00:00Z" },
+  { id: 1, marca: "Demo — Chevrolet", modelo: "Onix", anio: 2021, patente: "AA000AA", km: 42000, color: "Blanco", combustible: "nafta", transmision: "manual", estado: "disponible", precio: 12000000, created_at: "2026-08-01T00:00:00Z" },
+  { id: 2, marca: "Demo — Volkswagen", modelo: "Gol Trend", anio: 2019, patente: "AB111BB", km: 68000, color: "Gris", combustible: "nafta", transmision: "manual", estado: "reservado", precio: 9500000, created_at: "2026-08-10T00:00:00Z" },
+  { id: 3, marca: "Demo — Toyota", modelo: "Corolla", anio: 2022, patente: "AC222CC", km: 21000, color: "Negro", combustible: "nafta", transmision: "automatica", estado: "vendido", precio: 21000000, created_at: "2026-07-20T00:00:00Z" },
 ];
 
 export const DEMO_CLIENTES: Cliente[] = [
-  { id: 1, name: "Cliente Demostrativo N°1", email: "cliente1@demo.invalid", phone: "+54 9 11 0000 0000", created_at: "2026-07-20T00:00:00Z" },
-  { id: 2, name: "Cliente Demostrativo N°2", email: null, phone: "+54 9 11 1111 1111", created_at: "2026-09-01T00:00:00Z" },
+  { id: 1, name: "Cliente Demostrativo N°1", dni: "30111222", email: "cliente1@demo.invalid", phone: "+54 9 11 0000 0000", address: "Av. Siempreviva 742, CABA", created_at: "2026-07-20T00:00:00Z" },
+  { id: 2, name: "Cliente Demostrativo N°2", dni: null, email: null, phone: "+54 9 11 1111 1111", address: null, created_at: "2026-09-01T00:00:00Z" },
 ];
 
 export const DEMO_CATEGORIAS: Categoria[] = [
