@@ -29,9 +29,11 @@ export default async function OperacionesPage() {
         <table className="table-datos">
           <thead>
             <tr>
+              <th>PV N°</th>
               <th>Fecha</th>
               <th>Vehículo</th>
               <th>Cliente</th>
+              <th>Vendedor</th>
               <th>Precio</th>
               <th>Forma de pago</th>
               <th>Estado</th>
@@ -40,17 +42,19 @@ export default async function OperacionesPage() {
           <tbody>
             {operaciones.map((o) => (
               <tr key={o.id}>
+                <td>{o.pv_numero ?? "—"}</td>
                 <td className="whitespace-nowrap">{o.fecha.slice(0, 10)}</td>
                 <td>{nombreVehiculo(o.vehiculo_id, vehiculos)}</td>
                 <td>{clientes.find((c) => c.id === o.cliente_id)?.name ?? "—"}</td>
-                <td className="font-mono">{formatMoney(o.precio_venta)}</td>
+                <td>{o.vendedor ?? "—"}</td>
+                <td className="font-mono">{formatMoney(o.precio_venta, o.moneda)}</td>
                 <td>{estadoBadge(o.forma_pago)}</td>
                 <td>{estadoBadge(o.estado)}</td>
               </tr>
             ))}
             {operaciones.length === 0 && (
               <tr>
-                <td colSpan={6} className="italic text-slate-400">Sin operaciones.</td>
+                <td colSpan={8} className="italic text-slate-400">Sin operaciones.</td>
               </tr>
             )}
           </tbody>

@@ -2,7 +2,7 @@
   "name": "castello-gestion",
   "version": "0.1.0",
   "private": true,
-  "description": "Sistema de gestión centralizado para Castello (Fase 1). Next.js + Supabase.",
+  "description": "Sistema de gestión centralizado para Castello (Fase 1). Next.js + MySQL.",
   "scripts": {
     "dev": "next dev -p 3002",
     "build": "next build",
@@ -13,8 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.12.7",
-    "@supabase/supabase-js": "^2.117.1",
+    "mysql2": "^3.24.5",
     "next": "^16.3.6",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"

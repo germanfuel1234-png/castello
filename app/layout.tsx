@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { SIDEBAR_LINKS } from "@/lib/ui/nav";
-import { getCurrentUser } from "@/lib/supabase/auth";
-import { modoDemo } from "@/lib/supabase/client";
+import { modoDemo } from "@/lib/db/modo";
 
 export const metadata: Metadata = {
   title: "Castello · Gestión",
@@ -10,8 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const user = await getCurrentUser();
-
   return (
     <html lang="es">
       <body>
@@ -19,7 +16,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {/* Sidebar */}
           <aside className="w-64 shrink-0 bg-[#17202b] text-white sticky top-0 h-screen overflow-y-auto">
             <div className="px-5 py-5">
-              <div className="text-lg font-bold tracking-tight">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-lema.jpg" alt="LEMA" className="h-12 w-12 rounded-lg object-cover" />
+              <div className="mt-3 text-lg font-bold tracking-tight">
                 Castello<span className="text-[#60a5fa]">·</span>Gestión
               </div>
               <div className="text-[0.65rem] mt-1 text-slate-300">Fase 1 — Módulo de gestión</div>
@@ -47,20 +46,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {/* Estado de sesión */}
             <div className="mt-5 px-4 py-3 rounded-lg bg-[#1f2937] text-[0.7rem] text-slate-300 leading-relaxed">
               {modoDemo() ? (
-                <>
-                  🔒 <strong>Modo demo</strong> · sesión desactivada (falta proyecto Supabase).
-                  <a href="/login" className="underline text-[#60a5fa]">Ver pantalla de login</a>
-                </>
-              ) : user ? (
-                <>
-                  👤 {user.email ?? "usuario"}
-                  <form method="post" action="/logout" className="mt-2">
-                    <button type="submit" className="underline hover:text-white">Cerrar sesión</button>
-                  </form>
-                </>
+                <>🔒 <strong>Modo demo</strong> · sin base de datos configurada.</>
               ) : (
-                <a href="/login" className="underline text-[#60a5fa]">Iniciar sesión</a>
+                <>🟢 Base de datos conectada.</>
               )}
+              <div className="mt-2">
+                <a href="/login" className="underline text-[#60a5fa]">Sin autenticación todavía</a>
+              </div>
             </div>
           </aside>
 

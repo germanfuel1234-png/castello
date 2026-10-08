@@ -2,11 +2,13 @@ import { repo } from "@/lib/data/repository";
 import { demoBanner, estadoBadge, nombreCuenta, pageTitle } from "@/lib/ui/components";
 import { formatMoney } from "@/lib/business/money";
 import { movimientosPendientes, contarPendientes } from "@/lib/business/cola-pendientes";
+import { modoDemo } from "@/lib/db/modo";
 import CategorizarForm from "@/app/cola/categorizar-form";
 
 export const dynamic = "force-dynamic";
 
 export default async function ColaPendientesPage() {
+  const demo = modoDemo();
   const [movs, cuentas, vehiculos, cats] = await Promise.all([
     repo.getMovimientos(),
     repo.getCuentas(),
@@ -47,12 +49,12 @@ export default async function ColaPendientesPage() {
                 <td>{estadoBadge(m.type)}</td>
                 <td className="max-w-[12rem] truncate" title={m.description}>{m.description ?? "—"}</td>
                 <td>{nombreCuenta(m.cuenta_id, cuentas)}</td>
-                <td className="font-mono">{formatMoney(Math.abs(m.amount))}</td>
+                <td className="font-mono">{formatMoney(Math.abs(m.amount), m.moneda)}</td>
                 <td>
                   <span className="badge badge-slate">{m.source ?? "manual"}</span>
                 </td>
                 <td>
-                  <CategorizarForm movement={m} vehiculos={vehiculos} cats={cats} />
+                  <CategorizarForm movement={m} vehiculos={vehiculos} cats={cats} demo={demo} />
                 </td>
               </tr>
             ))}

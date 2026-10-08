@@ -29,7 +29,10 @@ export const SIDEBAR_LINKS: NavGroup[] = [
   },
   {
     titulo: "Automatización",
-    links: [{ label: "Cola pendientes", href: "/cola", icono: "📥" }],
+    links: [
+      { label: "Cola pendientes", href: "/cola", icono: "📥" },
+      { label: "Publicaciones", href: "/publicaciones", icono: "📢" },
+    ],
   },
   {
     titulo: "Dashboards",

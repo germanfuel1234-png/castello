@@ -1,6 +1,6 @@
 "use server";
 
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { getPool } from "@/lib/db/client";
 import { validarCategorizacion } from "@/lib/business/cola-pendientes";
 import { DemoReadOnlyError } from "@/lib/data/repository";
 
@@ -12,8 +12,8 @@ export interface CategorizarResult {
 /**
  * Cola de pendientes: asigna vehículo/categoría a un movimiento
  * automatizado y lo marca como categorizado.
- * - Demo (sin credenciales): rechazado con mensaje claro (solo lectura).
- * - Supabase: UPDATE sobre `movimientos`.
+ * - Demo (sin base de datos): rechazado con mensaje claro (solo lectura).
+ * - MySQL: UPDATE sobre `movimientos`.
  */
 export async function categorizarMovimientoAction(_prev: CategorizarResult, formData: FormData): Promise<CategorizarResult> {
   const id = Number(formData.get("movement_id"));
@@ -25,20 +25,19 @@ export async function categorizarMovimientoAction(_prev: CategorizarResult, form
     return { ok: false, error: errores.join(" · ") };
   }
 
-  const sb = getSupabaseClient();
-  if (!sb) {
+  const pool = getPool();
+  if (!pool) {
     return { ok: false, error: new DemoReadOnlyError().message };
   }
 
-  const { error } = await sb
-    .from("movimientos")
-    .update({
-      vehiculo_id: vehiculoId,
-      category_id: categoryId,
-      estado_categorizacion: "categorizado",
-    })
-    .eq("id", id);
+  try {
+    await pool.execute(
+      "UPDATE movimientos SET vehiculo_id = ?, category_id = ?, estado_categorizacion = 'categorizado' WHERE id = ?",
+      [vehiculoId, categoryId, id],
+    );
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
 
-  if (error) return { ok: false, error: error.message };
   return { ok: true, error: null };
 }

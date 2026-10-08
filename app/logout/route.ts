@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
-import { signOut } from "@/lib/supabase/auth";
-import { supabaseConfigurado } from "@/lib/supabase/client";
 
 export const dynamic = "force-dynamic";
 
-/** POST /logout — cierra la sesión de Supabase. */
+/** POST /logout — no-op hasta que haya login real (ver README §5). */
 export async function POST() {
-  if (supabaseConfigurado()) {
-    await signOut();
-  }
   const url = new URL("/login", process.env.NEXTAUTH_URL ?? "http://localhost:3002");
   return NextResponse.redirect(url);
 }

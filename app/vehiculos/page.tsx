@@ -2,6 +2,7 @@ import Link from "next/link";
 import { repo } from "@/lib/data/repository";
 import { demoBanner, estadoBadge, pageTitle } from "@/lib/ui/components";
 import { formatMoney } from "@/lib/business/money";
+import { modoDemo } from "@/lib/db/modo";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default async function VehiculosPage() {
               <th>Transmisión</th>
               <th>Estado</th>
               <th>Precio</th>
+              <th>Cargado por</th>
             </tr>
           </thead>
           <tbody>
@@ -52,20 +54,23 @@ export default async function VehiculosPage() {
                 <td className="capitalize">{v.combustible ?? "—"}</td>
                 <td className="capitalize">{v.transmision ?? "—"}</td>
                 <td>{estadoBadge(v.estado)}</td>
-                <td className="font-mono">{v.precio ? formatMoney(v.precio) : "—"}</td>
+                <td className="font-mono">{v.precio ? formatMoney(v.precio, v.moneda ?? "ars") : "—"}</td>
+                <td className="capitalize">{v.cargado_por ?? "—"}</td>
               </tr>
             ))}
             {vehiculos.length === 0 && (
               <tr>
-                <td colSpan={9} className="italic text-slate-400">Sin vehículos.</td>
+                <td colSpan={10} className="italic text-slate-400">Sin vehículos.</td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      <p className="mt-4 text-xs text-slate-400">
-        En modo demo el alta queda validada pero no se persiste (falta conectar Supabase).
-      </p>
+      {modoDemo() && (
+        <p className="mt-4 text-xs text-slate-400">
+          En modo demo el alta queda validada pero no se persiste (falta conectar la base de datos).
+        </p>
+      )}
     </main>
   );
 }

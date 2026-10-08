@@ -1,5 +1,5 @@
-import { modoDemo } from "@/lib/supabase/client";
-import type { Categoria, Cuenta, Vehiculo } from "@/lib/types/database";
+import { modoDemo } from "@/lib/db/modo";
+import type { Categoria, Cuenta, Moneda, Vehiculo } from "@/lib/types/database";
 import { formatMoney } from "@/lib/business/money";
 
 export function pageTitle(titulo: string, subtitulo?: string) {
@@ -15,7 +15,7 @@ export function demoBanner() {
   if (!modoDemo()) return null;
   return (
     <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-      <strong>Modo demo.</strong> No hay credenciales de Supabase configuradas todavía.
+      <strong>Modo demo.</strong> No hay base de datos configurada todavía.
       Mostrando <em>datos ficticios</em> de ejemplo, no datos reales del negocio.
     </div>
   );
@@ -39,6 +39,8 @@ export function estadoBadge(estado: string) {
       return <span className="badge badge-amber">◐ Reservado</span>;
     case "vendido":
       return <span className="badge badge-green">● Vendido</span>;
+    case "a_ingresar":
+      return <span className="badge badge-slate">◌ A ingresar</span>;
     case "pendiente":
       return <span className="badge badge-amber">Pendiente</span>;
     case "confirmada":
@@ -60,15 +62,29 @@ export function estadoBadge(estado: string) {
   }
 }
 
-export function montoMovimiento(m: { amount: number; type: string }) {
+export function montoMovimiento(m: { amount: number; type: string; moneda: Moneda }) {
   const clase = m.type === "ingreso" ? "text-[#0f766e]" : "text-[#b91c1c]";
   const signo = m.type === "ingreso" ? "+" : "−";
   return (
     <span className={`font-mono text-sm ${clase}`}>
       {signo}
-      {formatMoney(Math.abs(m.amount))}
+      {formatMoney(Math.abs(m.amount), m.moneda)}
     </span>
   );
+}
+
+export function canalBadge(estado: string) {
+  switch (estado) {
+    case "publicado":
+      return <span className="badge badge-green">● Publicado</span>;
+    case "error":
+      return <span className="badge badge-coral">⚠ Error</span>;
+    case "pausado":
+      return <span className="badge badge-slate">⏸ Pausado</span>;
+    case "pendiente":
+    default:
+      return <span className="badge badge-amber">◐ Pendiente</span>;
+  }
 }
 
 export function nombreVehiculo(id: number | null, vehiculos: Vehiculo[]): string {

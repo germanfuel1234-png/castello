@@ -1,6 +1,6 @@
 import { repo } from "@/lib/data/repository";
 import { demoBanner, pageTitle } from "@/lib/ui/components";
-import { formatMoney } from "@/lib/business/money";
+import { formatMontosPorMoneda, sumarPorMoneda } from "@/lib/business/money";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +14,9 @@ export default async function DashboardCuentaPage() {
 
       {cuentas.map((c) => {
         const deCuenta = movs.filter((m) => m.cuenta_id === c.id);
-        const ingresos = deCuenta.filter((m) => m.type === "ingreso").reduce((a, m) => a + m.amount, 0);
-        const egresos = deCuenta.filter((m) => m.type === "egreso").reduce((a, m) => a + m.amount, 0);
+        const ingresos = sumarPorMoneda(deCuenta.filter((m) => m.type === "ingreso"));
+        const egresos = sumarPorMoneda(deCuenta.filter((m) => m.type === "egreso"));
+        const saldo = { ars: (ingresos.ars ?? 0) - (egresos.ars ?? 0), usd: (ingresos.usd ?? 0) - (egresos.usd ?? 0) };
         return (
           <section key={c.id} className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
             <div className="flex items-baseline justify-between">
@@ -28,15 +29,15 @@ export default async function DashboardCuentaPage() {
             <div className="mt-3 grid grid-cols-3 gap-3">
               <div>
                 <div className="text-[0.7rem] uppercase text-slate-400">Ingresos</div>
-                <div className="font-mono text-lg text-[#0f766e]">{formatMoney(ingresos)}</div>
+                <div className="font-mono text-lg text-[#0f766e]">{formatMontosPorMoneda(ingresos)}</div>
               </div>
               <div>
                 <div className="text-[0.7rem] uppercase text-slate-400">Egresos</div>
-                <div className="font-mono text-lg text-[#b91c1c]">{formatMoney(egresos)}</div>
+                <div className="font-mono text-lg text-[#b91c1c]">{formatMontosPorMoneda(egresos)}</div>
               </div>
               <div>
                 <div className="text-[0.7rem] uppercase text-slate-400">Saldo neto</div>
-                <div className="font-mono text-lg font-bold">{formatMoney(ingresos - egresos)}</div>
+                <div className="font-mono text-lg font-bold">{formatMontosPorMoneda(saldo)}</div>
               </div>
             </div>
           </section>

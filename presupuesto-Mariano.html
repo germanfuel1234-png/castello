@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presupuesto — Sistema de Gestión Castello (Vehículos y Publicaciones)</title>
+
+<!-- Fuentes de Google -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+}
+</script>
+
+<style>
+  :root{
+    --bg:#0a0a0c;
+    --surface:#141416;
+    --surface-2:#1c1c1f;
+    --line:#2a2a2e;
+    --text:#f2f0ea;
+    --text-dim:#a8a6a0;
+    --amber:#e0a339;
+    --amber-dim:#8a692a;
+    --mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    --sans: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html, body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  a{color:inherit;}
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  .hero-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 600px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  #tubes-canvas {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    z-index: 0 !important;
+    pointer-events: auto;
+    touch-action: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 28px;
+    pointer-events: none;
+  }
+
+  .hero-content * {
+    pointer-events: auto;
+  }
+
+  .hero-content .wrap {
+    width: 100%;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--amber);
+    letter-spacing: 0.02em;
+    margin-bottom: 22px;
+  }
+
+  h1 {
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    max-width: 18ch;
+    margin-bottom: 22px;
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--text-dim);
+    max-width: 56ch;
+    margin-bottom: 34px;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .hero-meta strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .click-indicator {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    pointer-events: none;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .click-indicator svg {
+    width: 24px;
+    height: 24px;
+    opacity: 0.5;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.3;
+      transform: translateX(-50%) scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: translateX(-50%) scale(1.05);
+    }
+  }
+
+  section {
+    padding: 64px 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  section:last-of-type {
+    border-bottom: none;
+  }
+
+  h2 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 14px;
+  }
+
+  .section-lead {
+    color: var(--text-dim);
+    max-width: 62ch;
+    margin-bottom: 36px;
+    font-size: 15.5px;
+  }
+
+  .diag-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+
+  .diag-card {
+    background: var(--surface);
+    padding: 26px 28px;
+  }
+
+  .diag-card h3 {
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--amber);
+    text-transform: none;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .diag-card p {
+    font-size: 14.5px;
+    color: var(--text-dim);
+  }
+
+  .plan {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    padding: 34px 32px;
+    margin-top: 8px;
+  }
+
+  .plan-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--amber);
+    margin-bottom: 14px;
+  }
+
+  .plan-name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .plan-desc {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+    max-width: 60ch;
+  }
+
+  .plan-price {
+    font-family: var(--mono);
+    font-size: 38px;
+    font-weight: 600;
+    color: var(--amber);
+    margin-bottom: 4px;
+  }
+
+  .hours-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin-top: 16px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+  .hours-table th, .hours-table td {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hours-table th {
+    color: var(--amber);
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--surface-2);
+  }
+  .hours-table td.num, .hours-table th.num {
+    text-align: right;
+    font-family: var(--mono);
+    white-space: nowrap;
+    width: 1%;
+  }
+  .hours-table tfoot td {
+    border-bottom: none;
+    border-top: 1px solid var(--amber-dim);
+    font-weight: 700;
+    color: var(--text);
+    padding-top: 14px;
+    background: var(--surface-2);
+  }
+
+  .price-note {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-top: 18px;
+    font-family: var(--mono);
+  }
+
+  .optional-box {
+    margin-top: 36px;
+    padding: 24px 26px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 2px solid var(--amber-dim);
+  }
+
+  .optional-box h4 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .optional-box p {
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .next-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 8px;
+  }
+
+  .next-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    font-size: 14.5px;
+    color: var(--text-dim);
+  }
+
+  .next-item .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--amber);
+    margin-top: 8px;
+    flex-shrink: 0;
+  }
+
+  .next-item strong {
+    color: var(--text);
+  }
+
+  .footer {
+    border-top: 1px solid var(--line);
+    padding: 50px 0 45px;
+    margin-top: 20px;
+    background: var(--bg);
+  }
+
+  .footer .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px 30px;
+  }
+
+  .footer__copy {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .footer__copy .accent {
+    color: var(--amber);
+  }
+
+  @media (max-width: 640px) {
+    .diag-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .plan {
+      padding: 26px 22px;
+    }
+
+    .hours-table {
+      font-size: 12px;
+    }
+    .hours-table th, .hours-table td {
+      padding: 9px 8px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero-wrapper">
+  <canvas id="tubes-canvas"></canvas>
+
+  <div class="click-indicator">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 12L12 3L21 12L12 21L3 12Z" />
+      <path d="M12 3V21" />
+      <path d="M3 12H21" />
+      <path d="M12 12L17 17" />
+      <path d="M12 12L17 7" />
+      <path d="M12 12L7 17" />
+      <path d="M12 12L7 7" />
+    </svg>
+    <span>Click para cambiar colores</span>
+  </div>
+
+  <div class="hero-content">
+    <div class="wrap">
+      <div class="eyebrow">PROPUESTA TÉCNICA Y PRESUPUESTO</div>
+      <h1>Sistema de Gestión Castello — Stock y Publicaciones</h1>
+      <p class="hero-sub">Entrega inicial: carga y gestión de stock de vehículos, y publicación centralizada en Motordill/MercadoLibre y en el Catálogo de Meta (WhatsApp, Instagram y Facebook), sobre base de datos propia en MySQL.</p>
+      <div class="hero-meta">
+        <span><strong>Cliente:</strong> Mariano Castello (LEMA Autos)</span>
+        <span><strong>Fecha:</strong> Octubre 2026</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <h2>Alcance de la Entrega Inicial</h2>
+    <p class="section-lead">Lo que se entrega visible y operativo en esta etapa.</p>
+    <div class="diag-grid">
+      <div class="diag-card">
+        <h3>// CARGA Y GESTIÓN DE VEHÍCULOS</h3>
+        <p>Alta y stock de unidades con <strong>ficha técnica completa</strong>: marca, modelo, versión, año, km, color, combustible, transmisión, carrocería, puertas, motor, permuta y precio negociable.</p>
+      </div>
+      <div class="diag-card">
+        <h3>// PANTALLA DE PUBLICACIONES</h3>
+        <p>Estado de cada vehículo en <strong>Motordill/MercadoLibre</strong> y en el <strong>Catálogo de Meta</strong> (WhatsApp, Instagram y Facebook), con reintento y aviso claro de qué falta para publicar.</p>
+      </div>
+      <div class="diag-card">
+        <h3>// BASE DE DATOS PROPIA (MYSQL)</h3>
+        <p>Sin depender de Supabase: mismo esquema corre local para desarrollo y se aplica igual contra el hosting final (Hostinger u otro) cuando esté definido.</p>
+      </div>
+      <div class="diag-card">
+        <h3>// RESTO DE MÓDULOS — CONSTRUIDOS, OCULTOS POR AHORA</h3>
+        <p>Clientes, operaciones de venta, movimientos de caja y dashboards ya están desarrollados y funcionando; quedan fuera del menú hasta la próxima etapa, sin desarrollo adicional para habilitarlos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Desglose Presupuestario por Horas y Módulos</h2>
+    <p class="section-lead">Estimación detallada de horas por hito sobre una tarifa base de $20.000 ARS / hora.
+    </p>
+
+    <div class="plan">
+      <div class="plan-label">— ENTREGA INICIAL</div>
+      <div class="plan-name">Cotización por Entregable</div>
+      <div class="plan-desc">Desglose de módulos funcionales para la entrega inicial: vehículos y publicaciones.</div>
+
+      <div class="plan-price">$720.000 ARS</div>
+
+      <table class="hours-table">
+        <thead>
+          <tr>
+            <th>Módulo / Entregable de Desarrollo</th>
+            <th class="num">Horas</th>
+            <th class="num">Tarifa/Hs</th>
+            <th class="num">Total (ARS)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1. Arquitectura y base de datos propia en MySQL (esquema versionado, local y portable al hosting)</td>
+            <td class="num">8 hs</td>
+            <td class="num">$20.000</td>
+            <td class="num">$160.000</td>
+          </tr>
+          <tr>
+            <td>2. Carga y gestión de vehículos (ficha técnica completa, stock)</td>
+            <td class="num">10 hs</td>
+            <td class="num">$20.000</td>
+            <td class="num">$200.000</td>
+          </tr>
+          <tr>
+            <td>3. Módulo de publicaciones: conectores Motordill/MercadoLibre y Catálogo de Meta</td>
+            <td class="num">10 hs</td>
+            <td class="num">$20.000</td>
+            <td class="num">$200.000</td>
+          </tr>
+          <tr>
+            <td>4. QA integral y despliegue</td>
+            <td class="num">8 hs</td>
+            <td class="num">$20.000</td>
+            <td class="num">$160.000</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>TOTAL ESTIMADO — FASE 1</td>
+            <td class="num">36 hs</td>
+            <td class="num">—</td>
+            <td class="num">$720.000 ARS</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <p class="price-note">* Importe en pesos argentinos (ARS). Pago único o 50% anticipo y 50% contra entrega final.</p>
+    </div>
+
+    <div class="optional-box">
+      <h4>Pendiente del lado del cliente — credenciales a conseguir</h4>
+      <p>El desarrollo de los conectores ya está listo (<em>scaffolding</em> armado); falta que el cliente consiga estas credenciales para activarlos:</p>
+      <ul style="margin-top: 10px; padding-left: 20px; color: var(--text-dim); font-size: 14px;">
+        <li><strong>Motordill:</strong> API key y método de integración (API propia, feed XML u otro — a confirmar con Motordill).</li>
+        <li><strong>Meta Business (Catálogo):</strong> Access Token, Catalog ID y Business ID desde Meta Commerce Manager, vinculado a WhatsApp Business, Instagram y Facebook del negocio.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section style="border-bottom:none;">
+  <div class="wrap">
+    <h2>Requisitos para Activar las Publicaciones</h2>
+    <p class="section-lead">Los campos de carga ya fueron definidos por el cliente y están implementados. Lo que falta es lo siguiente:</p>
+    <div class="next-list">
+      <div class="next-item"><span class="dot"></span><span><strong>Credenciales de Motordill:</strong> API key y confirmación del método de integración.</span></div>
+      <div class="next-item"><span class="dot"></span><span><strong>Credenciales de Meta Business:</strong> Access Token, Catalog ID y Business ID del Catálogo de Meta Commerce Manager.</span></div>
+      <div class="next-item"><span class="dot"></span><span><strong>Aprobación de la propuesta</strong> y pago del anticipo inicial.</span></div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap">
+    <span class="footer__copy">
+      © 2026 Rodríguez Germán · <span class="accent">Desarrollador Full Stack</span>
+    </span>
+  </div>
+</footer>
+
+<script type="module">
+  import * as THREE from 'three';
+  const tubesModule = await import(
+    'https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js'
+  );
+  const TubesCursor = tubesModule.default;
+
+  const canvas = document.getElementById('tubes-canvas');
+
+  const app = TubesCursor(canvas, {
+    tubes: {
+      colors: ['#f967fb', '#53bc28', '#6958d5'],
+      lights: {
+        intensity: 200,
+        colors: ['#83f36e', '#fe8a2e', '#ff008a', '#60aed5'],
+      },
+    },
+  });
+
+  function randomColors(count) {
+    const colors = [];
+    for (let i = 0; i < count; i++) {
+      const hex = '#' + Math.floor(Math.random() * 16777215)
+        .toString(16)
+        .padStart(6, '0');
+      colors.push(hex);
+    }
+    return colors;
+  }
+
+  canvas.addEventListener('click', () => {
+    const tubeColors = randomColors(3);
+    const lightColors = randomColors(4);
+    app.tubes.setColors(tubeColors);
+    app.tubes.setLightsColors(lightColors);
+  });
+
+  function handleResize() {
+    if (app && app.resize) {
+      app.resize();
+    }
+  }
+
+  window.addEventListener('resize', handleResize);
+</script>
+
+</body>
+</html>

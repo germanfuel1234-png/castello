@@ -15,7 +15,7 @@ export default async function MovimientosPage() {
   return (
     <main>
       {demoBanner()}
-      {pageTitle("Movimientos", "Ingresos y egresos del negocio, en ARS.")}
+      {pageTitle("Movimientos", "Ingresos y egresos del negocio, en ARS o USD según la operación.")}
 
       <div className="mb-4 flex items-center gap-2 text-sm">
         <a
@@ -37,6 +37,7 @@ export default async function MovimientosPage() {
               <th>Vehículo</th>
               <th>Categoría</th>
               <th>Cuenta</th>
+              <th>Modalidad</th>
               <th>Monto</th>
               <th>Estado</th>
             </tr>
@@ -50,13 +51,14 @@ export default async function MovimientosPage() {
                 <td>{nombreVehiculo(m.vehiculo_id, vehiculos)}</td>
                 <td>{nombreCategoria(m.category_id, cats)}</td>
                 <td>{nombreCuenta(m.cuenta_id, cuentas)}</td>
-                <td className="font-mono">{formatMoney(Math.abs(m.amount))}</td>
+                <td className="capitalize">{m.modalidad ?? "—"}</td>
+                <td className="font-mono">{formatMoney(Math.abs(m.amount), m.moneda)}</td>
                 <td>{estadoBadge(m.estado_categorizacion)}</td>
               </tr>
             ))}
             {movs.length === 0 && (
               <tr>
-                <td colSpan={8} className="italic text-slate-400">Sin movimientos.</td>
+                <td colSpan={9} className="italic text-slate-400">Sin movimientos.</td>
               </tr>
             )}
           </tbody>

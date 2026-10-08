@@ -22,10 +22,9 @@ npm-debug.log*
 .env.local
 .env*.local
 
-# supabase
-supabase/.temp/
-supabase/.branches/
-
 # test
 /coverage/
 .vercel
+
+# fotos subidas por el usuario (no son código, no viajan con git)
+/public/uploads/

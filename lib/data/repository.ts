@@ -1,17 +1,29 @@
-import { getSupabaseClient, modoDemo } from "@/lib/supabase/client";
+import type { RowDataPacket } from "mysql2/promise";
+import { dbConfigurado, getPool } from "@/lib/db/client";
 import {
   DEMO_CATEGORIAS,
   DEMO_CLIENTES,
   DEMO_CUENTAS,
+  DEMO_FOTOS,
   DEMO_MOVIMIENTOS,
   DEMO_OPERACIONES,
+  DEMO_PUBLICACIONES,
   DEMO_VEHICULOS,
 } from "@/lib/data/mock";
-import type { Categoria, Cliente, Cuenta, Movimiento, Operacion, Vehiculo } from "@/lib/types/database";
+import type {
+  Categoria,
+  Cliente,
+  Cuenta,
+  Movimiento,
+  Operacion,
+  Publicacion,
+  Vehiculo,
+  VehiculoFoto,
+} from "@/lib/types/database";
 
 /**
  * Capa de acceso a datos unificada:
- * - Supabase real cuando está configurado (env vars).
+ * - MySQL real cuando está configurado (env vars).
  * - Clon de los datos demo en memoria si no (modo demo).
  * Todas las funciones son async.
  */
@@ -19,8 +31,8 @@ import type { Categoria, Cliente, Cuenta, Movimiento, Operacion, Vehiculo } from
 export class DemoReadOnlyError extends Error {
   constructor() {
     super(
-      "Modo demo (sin credenciales Supabase): la app es de solo lectura. " +
-        "Configurá NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY para operar datos reales.",
+      "Modo demo (sin base de datos configurada): la app es de solo lectura. " +
+        "Configurá DATABASE_URL (o MYSQL_HOST/PORT/USER/PASSWORD/DATABASE) para operar datos reales.",
     );
   }
 }
@@ -32,6 +44,8 @@ type DemoState = {
   cuentas: Cuenta[];
   operaciones: Operacion[];
   movimientos: Movimiento[];
+  publicaciones: Publicacion[];
+  fotos: VehiculoFoto[];
 };
 
 function cloneDemo(): DemoState {
@@ -42,6 +56,8 @@ function cloneDemo(): DemoState {
     cuentas: [...DEMO_CUENTAS],
     operaciones: [...DEMO_OPERACIONES],
     movimientos: [...DEMO_MOVIMIENTOS],
+    publicaciones: [...DEMO_PUBLICACIONES],
+    fotos: [...DEMO_FOTOS],
   };
 }
 
@@ -52,82 +68,69 @@ export function resetDemo(): void {
   state = cloneDemo();
 }
 
+async function rows<T>(sql: string, params: unknown[] = []): Promise<T[]> {
+  const pool = getPool();
+  const [result] = await pool!.query<(T & RowDataPacket)[]>(sql, params);
+  return result;
+}
+
 export const repo = {
   getVehiculos: async (): Promise<Vehiculo[]> => {
-    const sb = getSupabaseClient();
-    if (sb) {
-      const { data, error } = await sb.from("vehiculos").select("*").order("marca");
-      if (error) throw error;
-      return data ?? [];
-    }
+    if (dbConfigurado()) return rows<Vehiculo>("SELECT * FROM vehiculos ORDER BY marca");
     return [...state.vehiculos];
   },
 
   getClientes: async (): Promise<Cliente[]> => {
-    const sb = getSupabaseClient();
-    if (sb) {
-      const { data, error } = await sb.from("clientes").select("*").order("name");
-      if (error) throw error;
-      return data ?? [];
-    }
+    if (dbConfigurado()) return rows<Cliente>("SELECT * FROM clientes ORDER BY name");
     return [...state.clientes];
   },
 
   getCategorias: async (): Promise<Categoria[]> => {
-    const sb = getSupabaseClient();
-    if (sb) {
-      const { data, error } = await sb.from("categorias").select("*").order("name");
-      if (error) throw error;
-      return data ?? [];
-    }
+    if (dbConfigurado()) return rows<Categoria>("SELECT * FROM categorias ORDER BY name");
     return [...state.categorias];
   },
 
   getCuentas: async (): Promise<Cuenta[]> => {
-    const sb = getSupabaseClient();
-    if (sb) {
-      const { data, error } = await sb.from("cuentas").select("*").order("name");
-      if (error) throw error;
-      return data ?? [];
-    }
+    if (dbConfigurado()) return rows<Cuenta>("SELECT * FROM cuentas ORDER BY name");
     return [...state.cuentas];
   },
 
   getOperaciones: async (): Promise<Operacion[]> => {
-    const sb = getSupabaseClient();
-    if (sb) {
-      const { data, error } = await sb.from("operaciones").select("*").order("fecha", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    }
+    if (dbConfigurado()) return rows<Operacion>("SELECT * FROM operaciones ORDER BY fecha DESC");
     return [...state.operaciones].sort((a, b) => b.fecha.localeCompare(a.fecha));
   },
 
   getMovimientos: async (): Promise<Movimiento[]> => {
-    const sb = getSupabaseClient();
-    if (sb) {
-      const { data, error } = await sb.from("movimientos").select("*").order("fecha", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    }
+    if (dbConfigurado()) return rows<Movimiento>("SELECT * FROM movimientos ORDER BY fecha DESC");
     return [...state.movimientos].sort((a, b) => b.fecha.localeCompare(a.fecha));
   },
 
   getMovimientosByVehiculo: async (vehiculoId: number): Promise<Movimiento[]> => {
-    const sb = getSupabaseClient();
-    if (sb) {
-      const { data, error } = await sb
-        .from("movimientos")
-        .select("*")
-        .eq("vehiculo_id", vehiculoId)
-        .order("fecha", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
+    if (dbConfigurado()) {
+      return rows<Movimiento>("SELECT * FROM movimientos WHERE vehiculo_id = ? ORDER BY fecha DESC", [vehiculoId]);
     }
     return state.movimientos.filter((m) => m.vehiculo_id === vehiculoId);
   },
-};
 
-export function ensureWrite(): void {
-  if (modoDemo()) throw new DemoReadOnlyError();
-}
+  getPublicaciones: async (): Promise<Publicacion[]> => {
+    if (dbConfigurado()) return rows<Publicacion>("SELECT * FROM publicaciones ORDER BY actualizado_at DESC");
+    return [...state.publicaciones];
+  },
+
+  getPublicacionesByVehiculo: async (vehiculoId: number): Promise<Publicacion[]> => {
+    if (dbConfigurado()) return rows<Publicacion>("SELECT * FROM publicaciones WHERE vehiculo_id = ?", [vehiculoId]);
+    return state.publicaciones.filter((p) => p.vehiculo_id === vehiculoId);
+  },
+
+  getFotos: async (): Promise<VehiculoFoto[]> => {
+    if (dbConfigurado()) return rows<VehiculoFoto>("SELECT * FROM vehiculo_fotos ORDER BY orden");
+    return [...state.fotos];
+  },
+
+  getFotosByVehiculo: async (vehiculoId: number): Promise<VehiculoFoto[]> => {
+    if (dbConfigurado()) {
+      return rows<VehiculoFoto>("SELECT * FROM vehiculo_fotos WHERE vehiculo_id = ? ORDER BY orden", [vehiculoId]);
+    }
+    return state.fotos.filter((f) => f.vehiculo_id === vehiculoId).sort((a, b) => a.orden - b.orden);
+  },
+};

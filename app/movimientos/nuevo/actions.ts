@@ -1,6 +1,6 @@
 "use server";
 
-import { getSupabaseClient } from "@/lib/supabase/client";
+import { getPool } from "@/lib/db/client";
 import { parseAmount } from "@/lib/business/money";
 import { DemoReadOnlyError } from "@/lib/data/repository";
 
@@ -24,6 +24,9 @@ export async function registrarMovimientoManualAction(
   const categoryId = formData.get("category_id") ? Number(formData.get("category_id")) : null;
   const vehiculoId = formData.get("vehiculo_id") ? Number(formData.get("vehiculo_id")) : null;
   const cuentaId = formData.get("cuenta_id") ? Number(formData.get("cuenta_id")) : null;
+  const moneda = String(formData.get("moneda") ?? "ars");
+  const modalidad = String(formData.get("modalidad") ?? "").trim();
+  const tipoCambioRaw = String(formData.get("tipo_cambio") ?? "").trim();
 
   const amount = parseAmount(amountRaw);
   if (amount === null || amount <= 0) {
@@ -35,27 +38,41 @@ export async function registrarMovimientoManualAction(
   if (tipo !== "ingreso" && tipo !== "egreso") {
     return { ok: false, error: "Tipo inválido." };
   }
+  if (moneda !== "ars" && moneda !== "usd") {
+    return { ok: false, error: "Moneda inválida." };
+  }
   if (!categoryId) {
     return { ok: false, error: "La categoría es obligatoria." };
   }
+  const tipoCambio = tipoCambioRaw ? parseAmount(tipoCambioRaw) : null;
 
-  const sb = getSupabaseClient();
-  if (!sb) {
+  const pool = getPool();
+  if (!pool) {
     return { ok: false, error: new DemoReadOnlyError().message };
   }
 
-  const { error } = await sb.from("movimientos").insert({
-    fecha,
-    amount,
-    type: tipo,
-    source: "manual",
-    description: description || "Carga manual",
-    estado_categorizacion: "categorizado",
-    vehiculo_id: vehiculoId,
-    category_id: categoryId,
-    cuenta_id: cuentaId,
-  });
+  try {
+    await pool.execute(
+      `INSERT INTO movimientos
+        (fecha, amount, moneda, tipo_cambio, modalidad, type, source, description,
+         estado_categorizacion, vehiculo_id, category_id, cuenta_id)
+       VALUES (?, ?, ?, ?, ?, ?, 'manual', ?, 'categorizado', ?, ?, ?)`,
+      [
+        fecha,
+        amount,
+        moneda,
+        tipoCambio,
+        modalidad || null,
+        tipo,
+        description || "Carga manual",
+        vehiculoId,
+        categoryId,
+        cuentaId,
+      ],
+    );
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
 
-  if (error) return { ok: false, error: error.message };
   return { ok: true, error: null };
 }

@@ -1,6 +1,6 @@
 import { repo } from "@/lib/data/repository";
 import { demoBanner, estadoBadge, montoMovimiento, nombreVehiculo, pageTitle, statCard } from "@/lib/ui/components";
-import { formatMoney } from "@/lib/business/money";
+import { formatMoney, formatMontosPorMoneda, sumarPorMoneda } from "@/lib/business/money";
 import { contarPendientes } from "@/lib/business/cola-pendientes";
 
 export const dynamic = "force-dynamic";
@@ -13,22 +13,23 @@ export default async function ResumenPage() {
     repo.getMovimientos(),
   ]);
 
-  const totalIngresos = movs.filter((m) => m.type === "ingreso").reduce((a, m) => a + m.amount, 0);
-  const totalEgresos = movs.filter((m) => m.type === "egreso").reduce((a, m) => a + m.amount, 0);
+  const totalIngresos = sumarPorMoneda(movs.filter((m) => m.type === "ingreso"));
+  const totalEgresos = sumarPorMoneda(movs.filter((m) => m.type === "egreso"));
   const pendientes = contarPendientes(movs);
   const disponibles = vehiculos.filter((v) => v.estado === "disponible").length;
   const reservados = vehiculos.filter((v) => v.estado === "reservado").length;
   const vendidos = vehiculos.filter((v) => v.estado === "vendido").length;
+  const saldoNeto = { ars: (totalIngresos.ars ?? 0) - (totalEgresos.ars ?? 0), usd: (totalIngresos.usd ?? 0) - (totalEgresos.usd ?? 0) };
 
   return (
     <main className="px-6 py-6">
       {demoBanner()}
-      {pageTitle("Resumen", "Vista general del negocio — todos los montos en ARS.")}
+      {pageTitle("Resumen", "Vista general del negocio — montos en ARS y USD por separado (no se mezclan).")}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        {statCard("Ingresos", formatMoney(totalIngresos), `${movs.filter((m) => m.type === "ingreso").length} movimientos`, "text-[#0f766e]")}
-        {statCard("Egresos", formatMoney(totalEgresos), "gastos y comisiones", "text-[#b91c1c]")}
-        {statCard("Saldo neto", formatMoney(totalIngresos - totalEgresos), "ingresos − egresos", "text-[#17202b]")}
+        {statCard("Ingresos", formatMontosPorMoneda(totalIngresos), `${movs.filter((m) => m.type === "ingreso").length} movimientos`, "text-[#0f766e]")}
+        {statCard("Egresos", formatMontosPorMoneda(totalEgresos), "gastos y comisiones", "text-[#b91c1c]")}
+        {statCard("Saldo neto", formatMontosPorMoneda(saldoNeto), "ingresos − egresos", "text-[#17202b]")}
         {statCard("Pendientes de categorizar", String(pendientes), "cola única", pendientes > 0 ? "text-[#b45309]" : "text-[#17202b]")}
         {statCard("Stock de vehículos", String(vehiculos.length), `${disponibles} disponibles · ${reservados} reservados · ${vendidos} vendidos`)}
         {statCard("Clientes", String(clientes.length))}
@@ -76,7 +77,7 @@ export default async function ResumenPage() {
                 <div className="text-xs text-slate-400">{v.patente ?? "sin patente"} · {v.km ?? "?"} km</div>
               </div>
               <div className="text-right">
-                <div className="text-sm font-semibold">{v.precio ? formatMoney(v.precio) : "—"}</div>
+                <div className="text-sm font-semibold">{v.precio ? formatMoney(v.precio, v.moneda ?? "ars") : "—"}</div>
                 <div className="text-xs">{estadoBadge(v.estado)}</div>
               </div>
             </div>
